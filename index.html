@@ -517,8 +517,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <h3 class="text-2xl font-black uppercase mb-2 text-white">Заявка принята!</h3>
-                            <p class="text-zinc-400 mb-8">Мастер перезвонит вам в течение 30 минут.</p>
+                            <h3 class="text-2xl font-black uppercase mb-2 text-white">Почти готово!</h3>
+                            <p class="text-zinc-400 mb-8">Открылся WhatsApp с заполненной заявкой — просто нажмите «Отправить» в чате. Мастер ответит в ближайшее время.</p>
                             <button onclick="resetForm()" class="text-orange-500 font-bold uppercase text-xs border-b border-orange-500 pb-1 hover:text-orange-400 transition-colors">Отправить еще</button>
                         </div>
                     </div>
@@ -705,52 +705,26 @@
         });
 
         // ==========================================
-        // ОТПРАВКА ДАННЫХ В MAX (ЧЕРЕЗ PHP)
+        // ОТПРАВКА ЗАЯВКИ В WHATSAPP
         // ==========================================
         const form = document.getElementById('contact-form');
         const successMsg = document.getElementById('success-msg');
         const submitBtn = document.getElementById('submit-btn');
 
-        form.addEventListener('submit', async (e) => {
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const name = document.getElementById('name-input').value;
-            const phone = document.getElementById('phone-input').value;
-            const message = document.getElementById('message-input').value;
+            const name = document.getElementById('name-input').value.trim();
+            const phone = document.getElementById('phone-input').value.trim();
+            const message = document.getElementById('message-input').value.trim();
 
-            submitBtn.innerText = 'Отправка...';
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            const lines = ['Новая заявка с сайта HARDFORMA', 'Имя: ' + name, 'Телефон: ' + phone];
+            if (message) lines.push('Сообщение: ' + message);
+            const text = encodeURIComponent(lines.join('\n'));
 
-            try {
-                // Стучимся в наш файл send.php
-                const response = await fetch('send.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, phone, message })
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.status === 'success') {
-                    // Все супер, показываем окно успеха
-                    successMsg.classList.remove('hidden');
-                    successMsg.classList.add('flex');
-                } else {
-                    // Ошибка со стороны MAX (выводим в консоль для отладки)
-                    console.error('Ошибка от сервера MAX:', result.details);
-                    alert('Не удалось отправить в MAX. Загляните в консоль.');
-                }
-            } catch (error) {
-                console.error('Сетевая ошибка:', error);
-                alert('Сетевая ошибка. Возможно, вы запускаете сайт без сервера?');
-            } finally {
-                submitBtn.innerText = 'Отправить заявку';
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            window.open('https://wa.me/79831676181?text=' + text, '_blank');
+            successMsg.classList.remove('hidden');
+            successMsg.classList.add('flex');
         });
 
         function resetForm() {
